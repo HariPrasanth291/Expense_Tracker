@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Expense Tracker Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="header">
+    <div>
+      <p class="eyebrow">PERSONAL FINANCE</p>
+      <h1>Good Morning, Harryy ! </h1>
+    </div>
+    <div class="header-controls">
+      <select id="periodSelect" class="control">
+        <option value="month">Monthly</option>
+        <option value="year">Yearly</option>
+        <option value="all">All time</option>
+      </select>
+      <input id="dateFilter" class="control date-control" type="date" />
+      <button id="exportBtn" class="btn btn-dark">↓ Export CSV</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <section class="stats-grid">
+      <article class="card stat-card">
+        <div class="stat-top">
+          <span>Monthly Income</span><span class="stat-icon income">↑</span>
+        </div>
+        <strong id="incomeTotal">₹0</strong>
+        <small id="incomeChange">This month</small>
+      </article>
+      <article class="card stat-card">
+        <div class="stat-top">
+          <span>Monthly Expenses</span><span class="stat-icon expense">↓</span>
+        </div>
+        <strong id="expenseTotal">₹0</strong>
+        <small id="expenseChange">This month</small>
+      </article>
+      <article class="card stat-card">
+        <div class="stat-top">
+          <span>Balance</span><span class="stat-icon balance">₹</span>
+        </div>
+        <strong id="balanceTotal">₹0</strong>
+        <small id="balanceChange">Income minus expenses</small>
+      </article>
+      <article class="card stat-card">
+        <div class="stat-top">
+          <span>Saving Rate</span><span class="stat-icon saving">%</span>
+        </div>
+        <strong id="savingRate">0%</strong>
+        <small id="savingText">Based on selected period</small>
+      </article>
+    </section>
+
+    <section class="chart-grid">
+      <article class="card chart-card">
+        <div class="card-header">
+          <div>
+            <h2>Income vs Expenses</h2>
+            <p>Track your cash flow over the last 6 months.</p>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="cashFlowChart"></canvas></div>
+      </article>
+
+      <article class="card chart-card">
+        <div class="card-header">
+          <div>
+            <h2>Expense Breakdown</h2>
+            <p>Where your money is going.</p>
+          </div>
+        </div>
+        <div class="donut-wrap"><canvas id="categoryChart"></canvas></div>
+        <div id="categoryLegend" class="legend"></div>
+      </article>
+    </section>
+
+    <section class="card transactions-section">
+      <div class="card-header transactions-header">
+        <div>
+          <h2>Recent Transactions</h2>
+          <p id="transactionCount">0 transactions</p>
+        </div>
+        <div class="filters">
+          <input id="searchInput" class="control" type="search" placeholder="Search..." />
+          <select id="typeFilter" class="control">
+            <option value="all">All types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          <select id="categoryFilter" class="control">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="transactionsBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state hidden">
+          <div class="empty-icon">₹</div>
+          <h3>No transactions found</h3>
+          <p>Add an income or expense to start tracking.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="fab-group">
+    <button class="fab income-fab" id="addIncomeBtn" title="Add income">
+      +
+    </button>
+    <button class="fab expense-fab" id="addExpenseBtn" title="Add expense">
+      −
+    </button>
+  </div>
+
+  <div id="transactionModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">TRANSACTION</p>
+          <h2 id="modalTitle">Add Expense</h2>
+        </div>
+        <button class="close-btn" id="closeModal">×</button>
+      </div>
+      <form id="transactionForm">
+        <input type="hidden" id="transactionId" />
+        <input type="hidden" id="transactionType" />
+        <div class="form-grid">
+          <label>Amount
+            <input id="amountInput" type="number" min="0.01" step="0.01" required placeholder="0.00" />
+          </label>
+          <label>Date
+            <input id="transactionDate" type="date" required />
+          </label>
+        </div>
+        <label>Description
+          <input id="descriptionInput" type="text" maxlength="80" required placeholder="e.g. Grocery shopping" />
+        </label>
+        <label>Category
+          <select id="categoryInput" required></select>
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-light" id="cancelModal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Save Transaction
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
